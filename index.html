@@ -366,12 +366,6 @@
     color: var(--rose-light);
     box-shadow: 0 0 12px rgba(201,99,106,0.2);
   }
-  .time-slot.booked {
-    opacity: 0.25;
-    cursor: not-allowed;
-    text-decoration: line-through;
-  }
-
   /* Buttons */
   .btn {
     display: inline-flex;
@@ -721,15 +715,6 @@ today.setHours(0,0,0,0);
 currentYear = today.getFullYear();
 currentMonth = today.getMonth();
 
-// Booked slots stored in localStorage (key: "YYYY-MM-DD_HH:MM")
-function isBooked(date, slot) {
-  const key = `booked_${dateKey(date)}_${slot}`;
-  return localStorage.getItem(key) === '1';
-}
-function markBooked(date, slot) {
-  const key = `booked_${dateKey(date)}_${slot}`;
-  localStorage.setItem(key, '1');
-}
 function dateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -861,17 +846,12 @@ function renderTimeSlots(date) {
     btn.className = 'time-slot';
     btn.textContent = slot;
 
-    if (isBooked(date, slot)) {
-      btn.classList.add('booked');
-      btn.title = 'Уже забронировано';
-    } else {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedSlot = slot;
-        updateSummary();
-      });
-    }
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedSlot = slot;
+      updateSummary();
+    });
 
     container.appendChild(btn);
   });
@@ -937,9 +917,6 @@ async function confirmBooking() {
   const wish = document.getElementById('wish-text').value.trim();
   const dayNames = ['воскресенье','понедельник','вторник','среду','четверг','пятницу','субботу'];
   const dateStr = `${dayNames[selectedDate.getDay()]}, ${selectedDate.getDate()} ${MONTHS_RU[selectedDate.getMonth()].toLowerCase()} ${selectedDate.getFullYear()}`;
-
-  // Mark as booked locally
-  markBooked(selectedDate, selectedSlot);
 
   // Send via EmailJS (free service)
   const templateParams = {
